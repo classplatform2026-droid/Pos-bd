@@ -1,0 +1,6 @@
+{
+  "name": "ShopPOS - Cloud POS for Retail & Stores",
+  "description": "Professional, clean and responsive POS SaaS web app for local grocery, fashion, and electronics stores.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

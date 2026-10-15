@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  html, body {
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+  }
+}
+
+/* Hide scrollbar utility for clean touch swipe */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Print thermal receipt styles */
+@media print {
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 58mm Thermal Printer Roll (2-inch Mini) */
+  #printable-receipt.print-format-58mm {
+    width: 58mm !important;
+    max-width: 58mm !important;
+    padding: 2.5mm 2mm !important;
+    font-size: 10px !important;
+    line-height: 1.25 !important;
+  }
+
+  #printable-receipt.print-format-58mm h2 {
+    font-size: 13px !important;
+  }
+
+  /* 80mm Thermal Printer Roll (3-inch Standard) */
+  #printable-receipt.print-format-80mm {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    padding: 5mm 4mm !important;
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  #printable-receipt.print-format-80mm h2 {
+    font-size: 16px !important;
+  }
+
+  /* A4 Full Page Invoice */
+  #printable-receipt.print-format-A4 {
+    width: 100% !important;
+    max-width: 210mm !important;
+    padding: 10mm !important;
+    font-size: 13px !important;
+    margin: 0 auto !important;
+  }
+}

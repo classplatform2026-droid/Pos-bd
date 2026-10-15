@@ -1,0 +1,37 @@
+services:
+  # 1. Backend + Admin Web Service
+  - type: web
+    name: shop-pos-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npx tsx server.ts
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        value: "*"
+      - key: MONGODB_URI
+        sync: false # Set your MongoDB Atlas connection string in Render dashboard
+
+  # 2. Owner POS Frontend Static Site
+  - type: web
+    name: shop-pos-owner
+    runtime: static
+    rootDir: owner
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: shop-pos-backend
+          property: host
