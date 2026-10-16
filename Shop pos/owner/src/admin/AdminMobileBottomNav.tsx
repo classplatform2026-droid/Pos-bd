@@ -4,6 +4,7 @@ import {
   Store,
   CreditCard,
   Receipt,
+  Headphones,
   Settings,
   Sliders,
 } from 'lucide-react';
@@ -24,6 +25,7 @@ export const AdminMobileBottomNav: React.FC<AdminMobileBottomNavProps> = ({
     { id: 'features', label: 'Features', icon: Sliders },
     { id: 'subscriptions', label: 'Plans', icon: CreditCard },
     { id: 'payments', label: 'Payments', icon: Receipt },
+    { id: 'support', label: 'Support', icon: Headphones },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 

@@ -10,6 +10,7 @@ import {
   Search,
   Barcode,
   Camera,
+  QrCode,
   Layers,
   ShoppingBag,
   AlertCircle,
@@ -570,12 +571,11 @@ export const PosScreen: React.FC<PosScreenProps> = ({
             <button
               type="button"
               onClick={onOpenBarcodeModal}
-              className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
-              title="ক্যামেরা বারকোড স্ক্যানার ওপেন করুন"
+              className="flex items-center gap-1.5 px-2.5 py-2 bg-slate-100 hover:bg-slate-200/80 active:scale-95 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-semibold border border-slate-200/80 transition-all cursor-pointer shrink-0"
+              title="QR / Barcode Scanner"
             >
-              <Camera className="w-4 h-4" />
-              <Barcode className="w-4 h-4" />
-              <span className="hidden xs:inline sm:inline">বারকোড স্ক্যান</span>
+              <QrCode className="w-4 h-4 text-slate-600" />
+              <span className="hidden sm:inline">Scan</span>
             </button>
           )}
         </div>

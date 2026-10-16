@@ -27,6 +27,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onSwitchToOwnerPos }) 
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'danger' } | null>(null);
   const [adminNotifications, setAdminNotifications] = useState<AdminNotification[]>([]);
 
+  const handleNavigateToSupport = () => {
+    setCurrentTab('support');
+  };
+
   useEffect(() => {
     api.getAdminMetrics()
       .then((res) => {
@@ -43,6 +47,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onSwitchToOwnerPos }) 
               actionLabel: 'রিভিউ ও অনুমোদন করুন',
               onAction: () => handleNavigateToPayments(p),
             });
+          });
+        }
+        if (res.stats?.openTickets && res.stats.openTickets > 0) {
+          notifs.push({
+            id: 'support-open-tickets',
+            title: `কাস্টমার সাপোর্ট টিকেট: ${res.stats.openTickets}টি নতুন`,
+            message: `দোকানদারদের ${res.stats.openTickets}টি মেসেজ/টিকেট পেন্ডিং রয়েছে।`,
+            type: 'support',
+            time: 'সাপোর্ট',
+            actionLabel: 'সাপোর্ট স্ক্রিনে যান',
+            onAction: () => handleNavigateToSupport(),
           });
         }
         setAdminNotifications(notifs);
@@ -109,6 +124,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ onSwitchToOwnerPos }) 
             <AdminDashboardScreen
               onNavigateToShops={() => handleNavigateToShops()}
               onNavigateToPayments={() => handleNavigateToPayments()}
+              onNavigateToSupport={() => handleNavigateToSupport()}
               onReviewPayment={(payment) => handleNavigateToPayments(payment)}
               onAddPayment={() => handleNavigateToPayments(undefined, true)}
               onSwitchToOwnerPos={onSwitchToOwnerPos}

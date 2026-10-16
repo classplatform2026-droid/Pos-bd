@@ -111,7 +111,7 @@
       ],
       "status": "active",
       "createdAt": "2026-10-05T08:35:11.204Z",
-      "lastLogin": "2026-10-05T08:35:11.309Z"
+      "lastLogin": "2026-10-15T15:48:09.767Z"
     },
     {
       "_id": "usr_1791175517933",
@@ -162,7 +162,7 @@
       ],
       "status": "active",
       "createdAt": "2026-10-10T08:32:41.243Z",
-      "lastLogin": "2026-10-10T08:33:45.435Z"
+      "lastLogin": "2026-10-15T15:47:29.094Z"
     },
     {
       "_id": "usr_1791097905540",
@@ -885,15 +885,15 @@
   ],
   "audit_logs": [
     {
-      "storeId": "",
-      "userId": "usr_admin",
-      "userName": "Super Admin",
+      "storeId": "store_1791189310997",
+      "userId": "usr_1791189310997",
+      "userName": "আরিফ বিল্লাহ",
       "action": "LOGIN",
-      "details": "User logged in to store  with role SuperAdmin",
-      "_id": "log_1791621229830_880",
-      "timestamp": "2026-10-10T08:33:49.830Z",
-      "adminId": "usr_admin",
-      "targetStoreId": "platform",
+      "details": "User logged in to store store_1791189310997 with role Owner",
+      "_id": "log_1792079289770_207",
+      "timestamp": "2026-10-15T15:48:09.770Z",
+      "adminId": "usr_1791189310997",
+      "targetStoreId": "store_1791189310997",
       "previousValue": null,
       "newValue": null
     },
@@ -903,114 +903,10 @@
       "userName": "Super Admin (Saad)",
       "action": "LOGIN",
       "details": "User logged in to store  with role SuperAdmin",
-      "_id": "log_1791621225438_778",
-      "timestamp": "2026-10-10T08:33:45.438Z",
+      "_id": "log_1792079249098_838",
+      "timestamp": "2026-10-15T15:47:29.098Z",
       "adminId": "usr_admin_saad",
       "targetStoreId": "platform",
-      "previousValue": null,
-      "newValue": null
-    },
-    {
-      "storeId": "",
-      "userId": "usr_admin",
-      "userName": "Super Admin",
-      "action": "LOGIN",
-      "details": "User logged in to store  with role SuperAdmin",
-      "_id": "log_1791619220893_197",
-      "timestamp": "2026-10-10T08:00:20.893Z",
-      "adminId": "usr_admin",
-      "targetStoreId": "platform",
-      "previousValue": null,
-      "newValue": null
-    },
-    {
-      "storeId": "store_1791189310997",
-      "adminId": "usr_admin",
-      "userId": "usr_admin",
-      "userName": "Super Admin",
-      "action": "PAYMENT_APPROVED",
-      "targetStoreId": "store_1791189310997",
-      "details": "Approved payment TRX-H1G8X8 for ট্রায়াল টেস্ট স্টোর",
-      "_id": "log_1791614754186_147",
-      "timestamp": "2026-10-10T06:45:54.186Z",
-      "previousValue": null,
-      "newValue": null
-    },
-    {
-      "storeId": "",
-      "userId": "usr_admin",
-      "userName": "Super Admin",
-      "action": "LOGIN",
-      "details": "User logged in to store  with role SuperAdmin",
-      "_id": "log_1791614576252_266",
-      "timestamp": "2026-10-10T06:42:56.252Z",
-      "adminId": "usr_admin",
-      "targetStoreId": "platform",
-      "previousValue": null,
-      "newValue": null
-    },
-    {
-      "storeId": "store_1791175517933",
-      "userId": "usr_1791175517933",
-      "userName": "জামাল হোসেন",
-      "action": "COMPLETE_SALE",
-      "details": "Completed sale invoice #1003 for amount ৳ 580 in store store_1791175517933",
-      "_id": "log_1791614266237_619",
-      "timestamp": "2026-10-10T06:37:46.237Z",
-      "adminId": "usr_1791175517933",
-      "targetStoreId": "store_1791175517933",
-      "previousValue": null,
-      "newValue": null
-    },
-    {
-      "storeId": "store_1791175517933",
-      "userId": "usr_1791175517933",
-      "userName": "জামাল হোসেন",
-      "action": "UPDATE_SETTINGS",
-      "details": "Updated store configuration for \"টেস্ট শপ ভেরিফিকেশন\" (Main Branch)",
-      "_id": "log_1791613705671_236",
-      "timestamp": "2026-10-10T06:28:25.671Z",
-      "adminId": "usr_1791175517933",
-      "targetStoreId": "store_1791175517933",
-      "previousValue": null,
-      "newValue": null
-    },
-    {
-      "storeId": "store_1791175517933",
-      "userId": "usr_1791175517933",
-      "userName": "জামাল হোসেন",
-      "action": "COMPLETE_SALE",
-      "details": "Completed sale invoice #1002 for amount ৳ 289 in store store_1791175517933",
-      "_id": "log_1791613689497_344",
-      "timestamp": "2026-10-10T06:28:09.497Z",
-      "adminId": "usr_1791175517933",
-      "targetStoreId": "store_1791175517933",
-      "previousValue": null,
-      "newValue": null
-    },
-    {
-      "storeId": "store_1791175517933",
-      "userId": "usr_1791175517933",
-      "userName": "জামাল হোসেন",
-      "action": "COMPLETE_SALE",
-      "details": "Completed sale invoice #1001 for amount ৳ 289 in store store_1791175517933",
-      "_id": "log_1791613644728_821",
-      "timestamp": "2026-10-10T06:27:24.728Z",
-      "adminId": "usr_1791175517933",
-      "targetStoreId": "store_1791175517933",
-      "previousValue": null,
-      "newValue": null
-    },
-    {
-      "storeId": "store_1791175517933",
-      "userId": "usr_1791175517933",
-      "userName": "জামাল হোসেন",
-      "action": "UPDATE_SETTINGS",
-      "details": "Updated store configuration for \"টেস্ট শপ ভেরিফিকেশন\" (Main Branch)",
-      "_id": "log_1791613614600_365",
-      "timestamp": "2026-10-10T06:26:54.600Z",
-      "adminId": "usr_1791175517933",
-      "targetStoreId": "store_1791175517933",
       "previousValue": null,
       "newValue": null
     }

@@ -1,5 +1,3 @@
-export * from './types/index';
-
 export type AdminTab =
   | 'dashboard'
   | 'shops'

@@ -71,7 +71,10 @@ async function startServer() {
   if (!isProd) {
     console.log('[ShopPOS Server] Attaching Vite development middleware...');
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: false,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);

@@ -20,6 +20,8 @@ import {
   Layers,
   Receipt,
   Sparkles,
+  Camera,
+  QrCode,
 } from 'lucide-react';
 import { usePos } from '../context/PosContext';
 import { playSound } from '../utils/sound';
@@ -294,15 +296,16 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
             value={searchValue}
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full pl-10 pr-24 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-sm text-slate-800 rounded-xl border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+            className="w-full pl-10 pr-10 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-sm text-slate-800 rounded-xl border border-slate-200/80 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
           />
           {onBarcodeScanClick && isFeatureEnabled('feat_barcode_scanner') && (
             <button
+              type="button"
               onClick={onBarcodeScanClick}
-              title="Scan or enter barcode"
-              className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 rounded-md text-[11px] font-medium flex items-center gap-1.5 transition-colors shadow-2xs"
+              title="QR / Barcode Scanner"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
             >
-              <span className="font-mono text-[10px]">SCAN</span>
+              <QrCode className="w-4 h-4" />
             </button>
           )}
         </div>

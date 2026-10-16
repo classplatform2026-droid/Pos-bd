@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   Barcode,
+  QrCode,
   ShieldAlert,
   TrendingUp,
   TrendingDown,
@@ -25,6 +26,7 @@ import { usePos } from '../context/PosContext';
 import { ProductThumb } from '../components/ProductThumb';
 import { Product } from '../types';
 import { PRODUCT_ICON_OPTIONS, ProductIconOption } from '../data/productIcons';
+import { BarcodeScannerModal } from '../components/BarcodeScannerModal';
 
 const COMMON_UNITS = ['Pcs', 'Kg', 'Gram', 'Ltr', 'Packet', 'Box', 'Dozen', 'Pair'];
 
@@ -97,6 +99,7 @@ export const ProductsScreen: React.FC = () => {
   const [formCostPrice, setFormCostPrice] = useState('100');
   const [formUnit, setFormUnit] = useState('Pcs');
   const [formBarcode, setFormBarcode] = useState('');
+  const [scannerModalOpen, setScannerModalOpen] = useState(false);
   const [formThreshold, setFormThreshold] = useState('5');
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -1121,21 +1124,57 @@ export const ProductsScreen: React.FC = () => {
                 </div>
               </div>
 
-              {/* STOCK QUANTITY */}
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">
-                  Stock Quantity (মজুদ সংখ্যা) *
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formStock}
-                  onChange={(e) => setFormStock(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-semibold"
-                />
+              {/* STOCK QUANTITY & BARCODE IN A BALANCED GRID */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">
+                    Stock Quantity (মজুদ সংখ্যা) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formStock}
+                    onChange={(e) => setFormStock(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-700">
+                      Barcode (বারকোড)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setScannerModalOpen(true)}
+                      className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <QrCode className="w-3.5 h-3.5 text-blue-600" />
+                      <span>স্ক্যান</span>
+                    </button>
+                  </div>
+                  <div className="relative flex items-center">
+                    <Barcode className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={formBarcode}
+                      onChange={(e) => setFormBarcode(e.target.value)}
+                      placeholder="বারকোড বা স্ক্যান করুন..."
+                      className="w-full pl-9 pr-9 py-2 bg-slate-50 focus:bg-white border border-slate-200 rounded-xl text-xs sm:text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setScannerModalOpen(true)}
+                      title="ক্যামেরা বারকোড স্ক্যানার"
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                    >
+                      <QrCode className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {/* COLLAPSIBLE MORE OPTIONS (BUYING PRICE, BARCODE, UNIT) */}
+              {/* COLLAPSIBLE MORE OPTIONS (BUYING PRICE, UNIT, THRESHOLD) */}
               <div className="pt-1">
                 <button
                   type="button"
@@ -1150,7 +1189,7 @@ export const ProductsScreen: React.FC = () => {
                   ) : (
                     <>
                       <ChevronDown className="w-3.5 h-3.5" />
-                      <span>More options (Cost Price, Unit, Barcode)</span>
+                      <span>More options (Cost Price, Unit, Alert Threshold)</span>
                     </>
                   )}
                 </button>
@@ -1191,18 +1230,15 @@ export const ProductsScreen: React.FC = () => {
 
                     <div>
                       <label className="text-[11px] font-bold text-slate-600 block mb-1">
-                        Barcode
+                        Low Stock Alert Threshold
                       </label>
-                      <div className="relative">
-                        <Barcode className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                          type="text"
-                          value={formBarcode}
-                          onChange={(e) => setFormBarcode(e.target.value)}
-                          placeholder="Barcode number"
-                          className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-mono"
-                        />
-                      </div>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formThreshold}
+                        onChange={(e) => setFormThreshold(e.target.value)}
+                        className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-mono"
+                      />
                     </div>
                   </div>
                 )}
@@ -1481,7 +1517,17 @@ export const ProductsScreen: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+      {/* BARCODE SCANNER MODAL FOR PRODUCT FORM */}
+      {scannerModalOpen && (
+        <BarcodeScannerModal
+          title="Scan Product Barcode"
+          subtitle="পণ্যের গায়ে থাকা বারকোড ক্যামেরার সামনে ধরুন"
+          onClose={() => setScannerModalOpen(false)}
+          onScanCode={(code) => {
+            setFormBarcode(code);
+            showToast(`বারকোড স্ক্যান সম্পন্ন: ${code}`);
+          }}
+        />
       )}
     </div>
   );

@@ -9,6 +9,8 @@ import {
   Banknote,
   Search,
   Barcode,
+  Camera,
+  QrCode,
   Layers,
   ShoppingBag,
   AlertCircle,
@@ -543,33 +545,47 @@ export const PosScreen: React.FC<PosScreenProps> = ({
   return (
     <div className="flex flex-col md:flex-row flex-1 min-h-0 h-full overflow-hidden">
       <div className="flex-1 flex flex-col min-w-0 bg-slate-50/70 overflow-hidden">
-        <div className="p-3 bg-white border-b border-slate-200/80 md:hidden flex gap-2">
+        {/* Top Search & Barcode Scanner Bar */}
+        <div className="p-3 bg-white border-b border-slate-200/80 flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={internalSearch}
               onChange={(e) => setInternalSearch(e.target.value)}
-              placeholder="Search product..."
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 text-xs rounded-xl border border-slate-200"
+              placeholder="পণ্য খুঁজুন (নাম, SKU বা বারকোড)..."
+              className="w-full pl-9 pr-8 py-2 bg-slate-50 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
             />
+            {internalSearch && (
+              <button
+                type="button"
+                onClick={() => setInternalSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 text-xs font-bold"
+              >
+                ✕
+              </button>
+            )}
           </div>
+
           {onOpenBarcodeModal && isFeatureEnabled('feat_barcode_scanner') && (
             <button
+              type="button"
               onClick={onOpenBarcodeModal}
-              className="p-2 bg-slate-100 text-slate-700 rounded-xl"
+              className="flex items-center gap-1.5 px-2.5 py-2 bg-slate-100 hover:bg-slate-200/80 active:scale-95 text-slate-700 hover:text-slate-900 rounded-xl text-xs font-semibold border border-slate-200/80 transition-all cursor-pointer shrink-0"
+              title="QR / Barcode Scanner"
             >
-              <Barcode className="w-4 h-4" />
+              <QrCode className="w-4 h-4 text-slate-600" />
+              <span className="hidden sm:inline">Scan</span>
             </button>
           )}
         </div>
 
-        <div className="px-4 sm:px-6 py-3 bg-white border-b border-slate-200/60 overflow-x-auto flex items-center gap-2 shrink-0">
+        <div className="px-4 sm:px-6 py-2.5 bg-white border-b border-slate-200/60 overflow-x-auto flex items-center gap-2 shrink-0">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === cat
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'

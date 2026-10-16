@@ -71,11 +71,15 @@ export async function authenticateToken(
     }
 
     const isPlatformAdmin = user.role === 'SuperAdmin' || user.role === 'Admin';
-    const store = user.storeId ? await StoreRepo.getStore(user.storeId) : null;
+    let store = user.storeId ? await StoreRepo.getStore(user.storeId) : null;
+    if (!store && isPlatformAdmin) {
+      const all = await StoreRepo.getAllStores();
+      if (all.length > 0) store = all[0];
+    }
 
     if (!isPlatformAdmin) {
       if (!store) {
-        return res.status(401).json({ error: 'Store not found or no longer active.' });
+        return res.status(401).json({ error: 'Store not found or no longer active.', code: 'STORE_NOT_FOUND' });
       }
 
       if (store.status === 'suspended') {
@@ -87,11 +91,11 @@ export async function authenticateToken(
     }
 
     req.user = user;
-    req.storeId = user.storeId;
+    req.storeId = user.storeId || (store ? store._id : '');
     if (store) req.store = store;
     next();
   } catch {
-    return res.status(403).json({ error: 'Invalid or expired authentication token.' });
+    return res.status(401).json({ error: 'Invalid or expired authentication token.', code: 'UNAUTHORIZED' });
   }
 }
 
@@ -101,13 +105,14 @@ export function requireAdmin(
   next: NextFunction
 ) {
   if (!req.user) {
-    return res.status(401).json({ error: 'Unauthorized. Authentication required.' });
+    return res.status(401).json({ error: 'Unauthorized. Authentication required.', code: 'UNAUTHORIZED' });
   }
 
   const role = (req.user.role || '').toLowerCase();
   if (role !== 'superadmin' && role !== 'admin') {
     return res.status(403).json({
       error: 'Forbidden. Administrator or SuperAdmin privileges required.',
+      code: 'ADMIN_REQUIRED',
     });
   }
 
@@ -119,8 +124,13 @@ export function requireActiveSubscription(
   res: Response,
   next: NextFunction
 ) {
+  const isPlatformAdmin = req.user?.role === 'SuperAdmin' || req.user?.role === 'Admin';
+  if (isPlatformAdmin) {
+    return next();
+  }
+
   if (!req.store) {
-    return res.status(401).json({ error: 'Store context required.' });
+    return res.status(401).json({ error: 'Store context required.', code: 'STORE_REQUIRED' });
   }
 
   const sub = req.store.subscription;

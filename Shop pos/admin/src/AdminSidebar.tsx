@@ -11,7 +11,7 @@ import {
   Sliders,
 } from 'lucide-react';
 import { AdminTab } from './types';
-import { ShopMasterLogo } from './components/ShopMasterLogo';
+import { ShopMasterLogo } from '../components/ShopMasterLogo';
 
 interface AdminSidebarProps {
   currentTab: AdminTab;

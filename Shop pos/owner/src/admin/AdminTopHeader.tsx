@@ -93,8 +93,8 @@ export const AdminTopHeader: React.FC<AdminTopHeaderProps> = ({
   return (
     <header className="h-14 sm:h-16 bg-white border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between shrink-0 z-20 gap-2">
       <div className="flex items-center gap-1.5 md:hidden">
-        <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 p-1">
-          <ShopMasterLogo size={20} />
+        <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 p-1">
+          <ShopMasterLogo size={26} />
         </div>
         <span className="font-extrabold text-slate-900 text-sm tracking-tight inline">
           ShopPOS

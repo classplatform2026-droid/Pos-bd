@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
   RefreshCw,
+  Trash2,
 } from 'lucide-react';
 import { api } from '../../services/api';
 import { usePos } from '../../context/PosContext';
@@ -87,6 +88,13 @@ export const AdminShopsScreen: React.FC<AdminShopsScreenProps> = ({
   const [suspendModalOpen, setSuspendModalOpen] = useState(false);
   const [targetShopForSuspend, setTargetShopForSuspend] = useState<any | null>(null);
   const [suspendReason, setSuspendReason] = useState('Your account has been suspended by the administrator.');
+
+  // Secure Delete Modal State
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [targetShopForDelete, setTargetShopForDelete] = useState<any | null>(null);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+  const [deleteAdminPassword, setDeleteAdminPassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchStores = async () => {
     try {
@@ -175,6 +183,38 @@ export const AdminShopsScreen: React.FC<AdminShopsScreenProps> = ({
       if (selectedShopId === targetShopForSuspend._id) loadShopDetails(targetShopForSuspend._id);
     } catch (err) {
       if (onShowToast) onShowToast((err as Error).message || 'Failed to suspend store.', 'danger');
+    }
+  };
+
+  const handleInitiateDeleteShop = (store: any) => {
+    setTargetShopForDelete(store);
+    setDeleteConfirmationText('');
+    setDeleteAdminPassword('');
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDeleteShop = async () => {
+    if (!targetShopForDelete) return;
+    if (deleteConfirmationText.trim() !== targetShopForDelete.name) {
+      if (onShowToast) onShowToast('Store name does not match confirmation text.', 'danger');
+      return;
+    }
+
+    try {
+      setDeleteLoading(true);
+      const res = await api.deleteAdminStore(targetShopForDelete._id, deleteAdminPassword);
+      if (onShowToast) onShowToast(res.message || `Store "${targetShopForDelete.name}" permanently deleted.`, 'success');
+      setDeleteModalOpen(false);
+      setTargetShopForDelete(null);
+      if (selectedShopId === targetShopForDelete._id) {
+        setSelectedShopId(null);
+        if (onClearSelectedShop) onClearSelectedShop();
+      }
+      fetchStores();
+    } catch (err: any) {
+      if (onShowToast) onShowToast(err.message || 'Failed to delete store.', 'danger');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -320,11 +360,19 @@ export const AdminShopsScreen: React.FC<AdminShopsScreenProps> = ({
               onClick={() => handleToggleSuspend(store)}
               className={`px-3.5 py-2 text-xs font-bold rounded-xl shadow-xs transition-colors ${
                 store.status === 'active'
-                  ? 'bg-rose-500 hover:bg-rose-600 text-white'
+                  ? 'bg-amber-500 hover:bg-amber-600 text-white'
                   : 'bg-emerald-600 hover:bg-emerald-700 text-white'
               }`}
             >
               {store.status === 'active' ? 'Suspend Shop' : 'Activate Shop'}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleInitiateDeleteShop(store)}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl bg-rose-600 hover:bg-rose-700 text-white shadow-xs transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete Shop</span>
             </button>
           </div>
         </div>
@@ -657,6 +705,14 @@ export const AdminShopsScreen: React.FC<AdminShopsScreenProps> = ({
                           }`}
                         >
                           {s.status === 'active' ? 'Suspend' : 'Activate'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleInitiateDeleteShop(s)}
+                          title="Permanently Delete Shop"
+                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
@@ -1115,6 +1171,84 @@ export const AdminShopsScreen: React.FC<AdminShopsScreenProps> = ({
                 className="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold text-xs shadow-md shadow-rose-500/20"
               >
                 Suspend Shop
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Secure Store Deletion Modal */}
+      {deleteModalOpen && targetShopForDelete && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-rose-200 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <div className="text-center space-y-1">
+              <h2 className="text-base font-extrabold text-slate-900">Permanent Store Deletion</h2>
+              <p className="text-xs text-slate-500">
+                Are you sure you want to permanently delete <strong className="text-rose-600">{targetShopForDelete.name}</strong>?
+              </p>
+            </div>
+
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-[11px] text-rose-800 space-y-1">
+              <p className="font-bold flex items-center gap-1.5 text-rose-900">
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                <span>সতর্কতা: এটি একটি অপরিবর্তনীয় কাজ (Irreversible)!</span>
+              </p>
+              <p className="leading-relaxed">
+                এই দোকানের সকল প্রোডাক্ট, ক্যাটাগরি, বিক্রয় হিসাব (Sales), ইউজার অ্যাকাউন্ট ও সাবস্ক্রিপশন ডাটাবেস থেকে স্থায়ীভাবে মুছে যাবে।
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  নিশ্চিত করতে দোকানের নামটি টাইপ করুন: <span className="font-mono text-rose-600 select-all font-bold">"{targetShopForDelete.name}"</span>
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmationText}
+                  onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                  placeholder={targetShopForDelete.name}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                  অ্যাডমিন পাসওয়ার্ড (ঐচ্ছিক নিরাপত্তা প্রমাণ):
+                </label>
+                <input
+                  type="password"
+                  value={deleteAdminPassword}
+                  onChange={(e) => setDeleteAdminPassword(e.target.value)}
+                  placeholder="Enter admin password (optional)"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                disabled={deleteLoading}
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setTargetShopForDelete(null);
+                }}
+                className="flex-1 py-2.5 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 text-xs transition-colors"
+              >
+                বাতিল করুন (Cancel)
+              </button>
+              <button
+                type="button"
+                disabled={deleteLoading || deleteConfirmationText.trim() !== targetShopForDelete.name}
+                onClick={confirmDeleteShop}
+                className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-xs shadow-md shadow-rose-500/20 transition-all flex items-center justify-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{deleteLoading ? 'ডিলিট হচ্ছে...' : 'স্থায়ীভাবে মুছুন'}</span>
               </button>
             </div>
           </div>

@@ -18,7 +18,7 @@ import { cache } from './cache';
 
 const RAW_MONGODB_URI = process.env.MONGODB_URI || '';
 
-export function parseMongoConfig(rawUri: string, defaultDb = 'shopdb'): { uri: string; dbName: string } {
+export function parseMongoConfig(rawUri: string, defaultDb = 'bdp'): { uri: string; dbName: string } {
   let uri = (rawUri || '').trim();
   if (!uri) return { uri: '', dbName: defaultDb };
 

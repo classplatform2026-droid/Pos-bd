@@ -3,6 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <script>
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && (
+          event.reason.message?.includes('WebSocket closed without opened') ||
+          String(event.reason).includes('WebSocket') ||
+          String(event.reason).includes('vite')
+        )) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      });
+      window.addEventListener('error', function(event) {
+        if (event.message && (
+          event.message.includes('WebSocket') ||
+          event.message.includes('vite')
+        )) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      });
+    </script>
     <title>ShopPOS - Cloud POS for Retail & Stores</title>
     <meta name="description" content="Professional, clean and responsive POS SaaS web app for local grocery, fashion, and electronics stores." />
     <meta property="og:title" content="ShopPOS - Cloud POS for Retail & Stores" />

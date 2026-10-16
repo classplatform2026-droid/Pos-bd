@@ -15,12 +15,14 @@ import {
   Check,
   ShieldCheck,
   Sparkles,
+  Headphones,
 } from 'lucide-react';
 import { api } from '../../services/api';
 
 interface AdminDashboardScreenProps {
   onNavigateToShops: (shopId?: string) => void;
   onNavigateToPayments: () => void;
+  onNavigateToSupport?: () => void;
   onReviewPayment?: (payment: any) => void;
   onAddPayment?: () => void;
   onSwitchToOwnerPos?: () => void;
@@ -29,6 +31,7 @@ interface AdminDashboardScreenProps {
 export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
   onNavigateToShops,
   onNavigateToPayments,
+  onNavigateToSupport,
   onReviewPayment,
   onAddPayment,
   onSwitchToOwnerPos,
@@ -173,6 +176,18 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
               </button>
             )}
 
+            {onNavigateToSupport && (
+              <button
+                type="button"
+                onClick={onNavigateToSupport}
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white rounded-xl text-xs font-bold shadow-sm shadow-purple-500/20 transition-all cursor-pointer"
+                title="Customer Support & Tickets"
+              >
+                <Headphones className="w-3.5 h-3.5" />
+                <span>Customer Support</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={loadMetrics}
@@ -187,8 +202,8 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
         </div>
       </div>
 
-      {/* Quick Mobile Action Cards: 1-Tap Access on Phone */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      {/* Quick Mobile Action Cards: 1-Tap Access on Phone & Desktop */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
         <button
           type="button"
           onClick={() => onNavigateToShops()}
@@ -232,6 +247,24 @@ export const AdminDashboardScreen: React.FC<AdminDashboardScreenProps> = ({
             </p>
           </div>
         </button>
+
+        {onNavigateToSupport && (
+          <button
+            type="button"
+            onClick={onNavigateToSupport}
+            className="p-3 bg-white border border-slate-200/80 rounded-2xl text-left shadow-2xs hover:border-purple-400 active:scale-[0.98] transition-all flex items-center gap-2.5 group cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <Headphones className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-900 truncate">Customer Support</p>
+              <p className="text-[10px] text-purple-600 font-semibold truncate">
+                {stats.openTickets !== undefined && stats.openTickets > 0 ? `${stats.openTickets} tickets open` : 'Help & Tickets'}
+              </p>
+            </div>
+          </button>
+        )}
 
         {onSwitchToOwnerPos && (
           <button

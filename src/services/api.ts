@@ -129,7 +129,18 @@ async function request<T>(endpoint: string, options: RequestInit = {}, ttlMs = 0
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ error: `Request failed with status ${res.status}` }));
 
-      if (res.status === 401) {
+      const isAuthExpired =
+        res.status === 401 ||
+        (res.status === 403 &&
+          (errorData.code === 'UNAUTHORIZED' ||
+            errorData.code === 'ADMIN_REQUIRED' ||
+            errorData.code === 'USER_NOT_FOUND' ||
+            errorData.error?.toLowerCase().includes('token') ||
+            errorData.error?.toLowerCase().includes('expired') ||
+            errorData.error?.toLowerCase().includes('authentication') ||
+            errorData.error?.toLowerCase().includes('privileges required')));
+
+      if (isAuthExpired) {
         setStoredToken(null);
         try {
           localStorage.removeItem(TOKEN_KEY);

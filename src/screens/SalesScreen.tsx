@@ -7,6 +7,7 @@ import {
   ArrowRight,
   AlertCircle,
   X,
+  Download,
 } from 'lucide-react';
 import { usePos } from '../context/PosContext';
 import { PaymentMethod, Sale } from '../types';
@@ -43,6 +44,73 @@ export const SalesScreen: React.FC = () => {
   const completedCount = filteredSales.filter((s) => s.status === 'completed').length;
   const avgOrderValue = completedCount > 0 ? Math.round(currentSalesTotal / completedCount) : 0;
 
+  const exportToCSV = () => {
+    if (filteredSales.length === 0) return;
+
+    const headers = [
+      'Invoice No',
+      'Date & Time',
+      'Status',
+      'Customer Name',
+      'Customer Phone',
+      'Total Items',
+      'Items Summary',
+      'Subtotal',
+      'Discount',
+      'Tax',
+      'Total Amount',
+      'Payment Method',
+      'Cashier',
+    ];
+
+    const escapeCsv = (val: string | number | undefined | null) => {
+      if (val === undefined || val === null) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const rows = filteredSales.map((sale) => {
+      const dateFormatted = new Date(sale.createdAt).toLocaleString('en-US', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      });
+      const itemsPurchased = (sale.items || [])
+        .map((item) => `${item.quantity}x ${item.productName || (item as any).product?.name || 'Item'} (@${item.unitPrice})`)
+        .join('; ');
+      const totalItemCount = (sale.items || []).reduce((acc, item) => acc + (item.quantity || 1), 0);
+
+      return [
+        escapeCsv(sale.invoiceNo),
+        escapeCsv(dateFormatted),
+        escapeCsv(sale.status),
+        escapeCsv(sale.customerName || 'Walk-in Customer'),
+        escapeCsv(sale.customerPhone || 'N/A'),
+        escapeCsv(totalItemCount),
+        escapeCsv(itemsPurchased),
+        escapeCsv(sale.subtotal),
+        escapeCsv(sale.discountAmount || 0),
+        escapeCsv(sale.taxAmount || 0),
+        escapeCsv(sale.total),
+        escapeCsv(sale.paymentMethod),
+        escapeCsv(sale.cashierName || 'Staff'),
+      ].join(',');
+    });
+
+    // Add BOM (\uFEFF) for proper UTF-8 Excel support
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const cleanStoreName = (storeInfo.name || 'store').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const datePrefix = activeTab === 'today' ? 'today' : 'history';
+    link.download = `${cleanStoreName}_sales_${datePrefix}_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -54,26 +122,39 @@ export const SalesScreen: React.FC = () => {
             View transaction logs, invoice receipts, and issue refunds
           </p>
         </div>
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl self-start sm:self-auto">
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+            <button
+              onClick={() => setActiveTab('today')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'today'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Today's Sales
+            </button>
+            <button
+              onClick={() => setActiveTab('previous')}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'previous'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Previous History
+            </button>
+          </div>
+
           <button
-            onClick={() => setActiveTab('today')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'today'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            type="button"
+            onClick={exportToCSV}
+            disabled={filteredSales.length === 0}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 active:scale-95 text-slate-700 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-200/90 rounded-xl text-xs font-semibold shadow-2xs transition-all cursor-pointer"
+            title={`Export ${filteredSales.length} records as CSV`}
           >
-            Today's Sales
-          </button>
-          <button
-            onClick={() => setActiveTab('previous')}
-            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'previous'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Previous History
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>Export CSV</span>
           </button>
         </div>
       </div>

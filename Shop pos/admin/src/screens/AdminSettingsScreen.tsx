@@ -14,7 +14,7 @@ import {
   Search,
   Database,
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 
 interface AdminSettingsScreenProps {
   onShowToast?: (msg: string, type?: 'success' | 'danger') => void;

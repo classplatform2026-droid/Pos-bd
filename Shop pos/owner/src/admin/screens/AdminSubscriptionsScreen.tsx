@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Check, Edit2, X } from 'lucide-react';
+import { Plus, Check, Edit2, X, Trash2, AlertTriangle } from 'lucide-react';
 import { api } from '../../services/api';
 import { AdminPlanItem } from '../types';
 
@@ -50,6 +50,9 @@ export const AdminSubscriptionsScreen: React.FC<AdminSubscriptionsScreenProps> =
   ]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<AdminPlanItem | null>(null);
+  const [deletePlanModalOpen, setDeletePlanModalOpen] = useState(false);
+  const [planToDelete, setPlanToDelete] = useState<AdminPlanItem | null>(null);
+  const [deletePlanLoading, setDeletePlanLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     price: 499,
@@ -141,6 +144,27 @@ export const AdminSubscriptionsScreen: React.FC<AdminSubscriptionsScreenProps> =
     }
   };
 
+  const handleInitiateDeletePlan = (plan: AdminPlanItem) => {
+    setPlanToDelete(plan);
+    setDeletePlanModalOpen(true);
+  };
+
+  const confirmDeletePlan = async () => {
+    if (!planToDelete) return;
+    try {
+      setDeletePlanLoading(true);
+      const res = await api.deleteAdminPlan(planToDelete._id);
+      if (onShowToast) onShowToast(res.message || `Plan "${planToDelete.name}" deleted.`, 'success');
+      setDeletePlanModalOpen(false);
+      setPlanToDelete(null);
+      fetchPlans();
+    } catch (err: any) {
+      if (onShowToast) onShowToast(err.message || 'Failed to delete plan.', 'danger');
+    } finally {
+      setDeletePlanLoading(false);
+    }
+  };
+
   return (
     <div className="p-3.5 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -194,14 +218,22 @@ export const AdminSubscriptionsScreen: React.FC<AdminSubscriptionsScreenProps> =
                   ))}
                 </div>
               </div>
-              <div className="mt-8 pt-4 border-t border-slate-100">
+              <div className="mt-8 pt-4 border-t border-slate-100 flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => openEditModal(plan)}
-                  className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-xs flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 px-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Edit Plan</span>
+                  <span>Edit</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInitiateDeletePlan(plan)}
+                  title="Delete Plan"
+                  className="p-2.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 rounded-xl transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -272,6 +304,48 @@ export const AdminSubscriptionsScreen: React.FC<AdminSubscriptionsScreenProps> =
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Plan Confirmation Modal */}
+      {deletePlanModalOpen && planToDelete && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-rose-200 shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <div className="text-center space-y-1">
+              <h2 className="text-base font-extrabold text-slate-900">Delete Subscription Plan?</h2>
+              <p className="text-xs text-slate-500">
+                Are you sure you want to remove plan <strong className="text-slate-800">"{planToDelete.name}"</strong>?
+              </p>
+            </div>
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900">
+              দোকানগুলো এই প্ল্যানে সাবস্ক্রাইব করা থাকলে প্ল্যানটি ডিলিট করা যাবে না।
+            </div>
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                disabled={deletePlanLoading}
+                onClick={() => {
+                  setDeletePlanModalOpen(false);
+                  setPlanToDelete(null);
+                }}
+                className="flex-1 py-2 border border-slate-200 rounded-xl font-bold text-slate-600 hover:bg-slate-50 text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletePlanLoading}
+                onClick={confirmDeletePlan}
+                className="flex-1 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs shadow-md shadow-rose-500/20 flex items-center justify-center gap-1.5"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{deletePlanLoading ? 'Deleting...' : 'Delete Plan'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

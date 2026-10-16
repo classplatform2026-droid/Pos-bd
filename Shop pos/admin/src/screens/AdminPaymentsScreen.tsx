@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, X, Store, Plus, CheckCircle2, AlertCircle, Clock, Check, CreditCard, RefreshCw } from 'lucide-react';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 import { AdminPaymentItem } from '../types';
 
 interface AdminPaymentsScreenProps {

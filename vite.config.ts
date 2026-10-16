@@ -4,9 +4,36 @@ import path from 'path';
 import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
 
+function suppressHmrRejectionPlugin() {
+  return {
+    name: 'suppress-vite-hmr-rejection',
+    transform(code: string, id: string) {
+      if (id.includes('client.mjs') || id.includes('@vite/client')) {
+        return {
+          code: code
+            .replace(
+              'transport.connect(createHMRHandler(handleMessage));',
+              'transport.connect(createHMRHandler(handleMessage)).catch(() => {});'
+            )
+            .replace(
+              'console.error(`[vite] failed to connect to websocket (${e}). `);\n\t\t\t\tthrow e;',
+              '/* [vite] HMR disabled */'
+            )
+            .replace(
+              'ws.send(JSON.stringify(data));',
+              'if (ws && typeof ws.send === "function" && ws.readyState === ws.OPEN) { ws.send(JSON.stringify(data)); }'
+            ),
+          map: null,
+        };
+      }
+    },
+  };
+}
+
 export default defineConfig(() => {
   return {
     plugins: [
+      suppressHmrRejectionPlugin(),
       react(),
       tailwindcss(),
       VitePWA({

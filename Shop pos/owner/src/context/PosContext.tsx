@@ -479,9 +479,12 @@ export const PosProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteProduct = async (id: string) => {
     try {
       await api.deleteProduct(id);
-    } catch {}
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-    removeFromCart(id);
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      removeFromCart(id);
+    } catch (err: any) {
+      console.error('Failed to delete product on server:', err);
+      throw new Error(err?.message || 'Failed to delete product from server.');
+    }
   };
 
   const adjustStock = async (id: string, newStock: number) => {
@@ -511,8 +514,11 @@ export const PosProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteCategory = async (name: string): Promise<void> => {
     try {
       await api.deleteCategory(name);
-    } catch {}
-    setCategories((prev) => prev.filter((c) => c !== name));
+      setCategories((prev) => prev.filter((c) => c !== name));
+    } catch (err: any) {
+      console.error('Failed to delete category on server:', err);
+      throw new Error(err?.message || 'Failed to delete category from server.');
+    }
   };
 
   const updateStoreInfo = async (updates: Partial<StoreInfo>) => {

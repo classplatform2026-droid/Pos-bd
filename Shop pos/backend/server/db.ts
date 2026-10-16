@@ -18,7 +18,7 @@ import { cache } from './cache';
 
 const RAW_MONGODB_URI = process.env.MONGODB_URI || '';
 
-export function parseMongoConfig(rawUri: string, defaultDb = 'shopdb'): { uri: string; dbName: string } {
+export function parseMongoConfig(rawUri: string, defaultDb = 'bdp'): { uri: string; dbName: string } {
   let uri = (rawUri || '').trim();
   if (!uri) return { uri: '', dbName: defaultDb };
 
@@ -79,6 +79,10 @@ export function buildStoreQuery(storeId: string | any) {
     }
   }
   return { storeId: strId };
+}
+
+export function escapeRegex(text: string): string {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
 }
 
 export function normalizeDoc<T>(doc: any): T {
@@ -1069,20 +1073,32 @@ export const StoreRepo = {
   async deleteStore(storeId: string): Promise<boolean> {
     cache.invalidateStores(storeId);
     cache.invalidatePayments();
+    cache.invalidateUsers(storeId);
+    cache.invalidateProducts(storeId);
+    cache.invalidateCategories(storeId);
+    cache.del(`sales:${storeId}`);
+    cache.del(`store:${storeId}`);
+    cache.del(`store:details:${storeId}`);
 
     if (isUsingRemoteMongo && nativeDb) {
       await nativeDb.collection<any>('stores').deleteOne(buildIdQuery(storeId));
+      await nativeDb.collection<any>('users').deleteMany(buildStoreQuery(storeId));
       await nativeDb.collection<any>('products').deleteMany(buildStoreQuery(storeId));
       await nativeDb.collection<any>('categories').deleteMany(buildStoreQuery(storeId));
       await nativeDb.collection<any>('sales').deleteMany(buildStoreQuery(storeId));
+      await nativeDb.collection<any>('payments').deleteMany(buildStoreQuery(storeId));
+      await nativeDb.collection<any>('support_tickets').deleteMany(buildStoreQuery(storeId));
       return true;
     }
 
     const before = localDb.stores.length;
     localDb.stores = localDb.stores.filter((s) => !(s._id === storeId || (s as any).id === storeId));
+    localDb.users = (localDb.users || []).filter((u) => u.storeId !== storeId);
     localDb.products = (localDb.products || []).filter((p) => p.storeId !== storeId);
     localDb.categories = (localDb.categories || []).filter((c) => c.storeId !== storeId);
     localDb.sales = (localDb.sales || []).filter((s) => s.storeId !== storeId);
+    localDb.payments = (localDb.payments || []).filter((pay) => pay.storeId !== storeId);
+    localDb.support_tickets = (localDb.support_tickets || []).filter((st) => st.storeId !== storeId);
     saveLocalDb();
     return localDb.stores.length < before;
   },
@@ -1752,12 +1768,13 @@ export const CategoriesRepo = {
 
   async delete(storeId: string, name: string): Promise<boolean> {
     const trimmed = name.trim();
+    const escaped = escapeRegex(trimmed);
     cache.invalidateCategories(storeId);
 
     if (isUsingRemoteMongo && nativeDb) {
       await nativeDb.collection<any>('categories').deleteOne({
         ...buildStoreQuery(storeId),
-        name: { $regex: new RegExp(`^${trimmed}$`, 'i') },
+        name: { $regex: new RegExp(`^${escaped}$`, 'i') },
       });
       return true;
     }
@@ -2018,7 +2035,7 @@ export const SalesRepo = {
 };
 
 export const AuditRepo = {
-  async purgeOlderThanDays(days = 2): Promise<number> {
+  async purgeOlderThanDays(days = 90): Promise<number> {
     const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     const cutoffIso = cutoffDate.toISOString();
     let removedCount = 0;
@@ -2053,9 +2070,9 @@ export const AuditRepo = {
   },
 
   async log(entry: Omit<AuditLogDoc, '_id' | 'timestamp'>): Promise<AuditLogDoc> {
-    // Opportunistically purge logs older than 2 days
+    // Opportunistically purge logs older than 90 days
     try {
-      await AuditRepo.purgeOlderThanDays(2);
+      await AuditRepo.purgeOlderThanDays(90);
     } catch {
       // Non-blocking
     }

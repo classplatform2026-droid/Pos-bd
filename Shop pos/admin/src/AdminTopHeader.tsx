@@ -12,8 +12,8 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import { DbOptimizationModal } from './components/DbOptimizationModal';
-import { ShopMasterLogo } from './components/ShopMasterLogo';
+import { DbOptimizationModal } from '../components/DbOptimizationModal';
+import { ShopMasterLogo } from '../components/ShopMasterLogo';
 
 export interface AdminNotification {
   id: string;

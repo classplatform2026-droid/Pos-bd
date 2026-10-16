@@ -68,9 +68,12 @@ authRouter.post('/login', async (req: AuthRequest, res: Response) => {
     if (password && userPass) {
       passwordMatches = await bcrypt.compare(password, userPass);
     }
+    if (!passwordMatches && user.pinHash && password) {
+      passwordMatches = await bcrypt.compare(password, user.pinHash);
+    }
 
     if (!passwordMatches) {
-      return res.status(401).json({ error: 'Incorrect password.' });
+      return res.status(401).json({ error: 'Incorrect password or PIN.' });
     }
 
     await UsersRepo.update(user.storeId, user._id, { lastLogin: new Date().toISOString() });

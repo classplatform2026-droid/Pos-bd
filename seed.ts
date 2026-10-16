@@ -5,11 +5,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // The user connection URI (defaults to the provided Atlas cluster if not in process.env)
-const DEFAULT_URI = 'mongodb+srv://mdmutasimbillahsaad_db_user:QGSKlkxhnhkPJwFz@cluster0.j29uko9.mongodb.net/shopdb?appName=Cluster0';
+const DEFAULT_URI = 'mongodb+srv://mdmutasimbillahsaad_db_user:QGSKlkxhnhkPJwFz@cluster0.j29uko9.mongodb.net/bdp?appName=Cluster0';
 
 function sanitizeMongoUri(raw: string): { uri: string; dbName: string } {
   let uri = (raw || '').trim();
-  let dbName = 'shopdb';
+  let dbName = 'bdp';
 
   if (!uri) {
     return { uri: DEFAULT_URI, dbName };

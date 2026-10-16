@@ -1,4 +1,5 @@
 import { Router, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import {
   StoreRepo,
   UsersRepo,
@@ -23,9 +24,11 @@ adminRouter.get('/metrics', async (_req: AuthRequest, res: Response) => {
     const data = await cache.getOrSet('admin:metrics', async () => {
       const stores = await StoreRepo.getAllStores();
       const payments = await PaymentsRepo.getAll();
+      const supportTickets = await SupportRepo.getAll();
 
       const pendingPayments = payments.filter((p) => p.status === 'pending');
       const approvedPayments = payments.filter((p) => p.status === 'approved');
+      const openTicketsCount = supportTickets.filter((t) => t.status === 'open' || t.status === 'in_progress').length;
 
       const activeCount = stores.filter((s) => s.status === 'active').length;
       const suspendedCount = stores.filter((s) => s.status === 'suspended').length;
@@ -82,6 +85,7 @@ adminRouter.get('/metrics', async (_req: AuthRequest, res: Response) => {
           monthlyRevenueGrowth: '+12.9%',
           pendingPayments: pendingPaymentsCount,
           pendingLabel: pendingPaymentsCount > 0 ? 'Needs review' : 'All clear',
+          openTickets: openTicketsCount,
         },
         recentShops,
         pendingPayments: pendingList,
@@ -494,6 +498,26 @@ adminRouter.post('/stores/:storeId/extend-subscription', async (req: AuthRequest
 adminRouter.delete('/stores/:storeId', async (req: AuthRequest, res: Response) => {
   try {
     const { storeId } = req.params;
+    const { adminPassword } = (req.body || {}) as { adminPassword?: string };
+
+    // If an admin password is provided, verify it against the logged-in admin user
+    if (adminPassword) {
+      const adminUser = req.user;
+      if (adminUser) {
+        const storedHash = adminUser.passwordHash;
+        const storedPass = adminUser.password;
+        let passwordMatches = false;
+        if (storedHash) {
+          passwordMatches = await bcrypt.compare(adminPassword, storedHash);
+        } else if (storedPass) {
+          passwordMatches = adminPassword === storedPass;
+        }
+        if (!passwordMatches) {
+          return res.status(403).json({ error: 'Incorrect administrator password.' });
+        }
+      }
+    }
+
     const store = await StoreRepo.getStore(storeId);
     if (!store) return res.status(404).json({ error: 'Store not found.' });
 
@@ -501,6 +525,16 @@ adminRouter.delete('/stores/:storeId', async (req: AuthRequest, res: Response) =
     if (!deleted) return res.status(500).json({ error: 'Failed to delete store.' });
 
     cache.invalidateStores();
+
+    await AuditRepo.log({
+      storeId: 'admin_console',
+      adminId: req.user?._id || 'admin_console',
+      userId: req.user?._id || 'admin_console',
+      userName: req.user?.name || 'Super Admin',
+      action: 'DELETE_STORE',
+      targetStoreId: storeId,
+      details: `Permanently deleted store "${store.name}" (ID: ${storeId}) and all associated records.`,
+    });
 
     return res.json({
       success: true,
@@ -701,10 +735,31 @@ adminRouter.delete('/plans/:planId', async (req: AuthRequest, res: Response) => 
     const current = await PlansRepo.getById(planId);
     if (!current) return res.status(404).json({ error: 'Plan not found.' });
 
+    // Check if any stores are actively using this plan
+    const allStores = await StoreRepo.getAllStores();
+    const usingStores = allStores.filter(
+      (s) => (s.subscription?.plan || '').toLowerCase() === current.name.toLowerCase()
+    );
+    if (usingStores.length > 0) {
+      return res.status(400).json({
+        error: `Cannot delete plan "${current.name}" because it is currently assigned to ${usingStores.length} store(s). Please migrate those stores first.`,
+      });
+    }
+
     const success = await PlansRepo.delete(planId);
     if (!success) return res.status(500).json({ error: 'Failed to delete plan.' });
 
     cache.invalidatePlans();
+
+    await AuditRepo.log({
+      storeId: 'admin_console',
+      adminId: req.user?._id || 'admin_console',
+      userId: req.user?._id || 'admin_console',
+      userName: req.user?.name || 'Super Admin',
+      action: 'DELETE_PLAN',
+      details: `Admin deleted subscription plan "${current.name}" (ID: ${planId})`,
+    });
+
     return res.json({ success: true, message: `Plan "${current.name}" has been removed.` });
   } catch {
     return res.status(500).json({ error: 'Failed to delete plan.' });

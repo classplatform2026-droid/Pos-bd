@@ -21,7 +21,7 @@ import {
   Search,
   Sparkles,
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 import { FeatureDefinition } from '../types';
 
 interface AdminFeaturesScreenProps {
